@@ -1,0 +1,55 @@
+name: Build and test
+
+on:
+  push:
+    branches:
+      - "master"
+    paths:
+      - "src/*.rs"
+      - "build.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "!.gitignore"
+      - "!LICENSE"
+      - "!README.md"
+  pull_request:
+    branches:
+      - "master"
+    paths:
+      - "src/*.rs"
+      - "build.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "!.gitignore"
+      - "!LICENSE"
+      - "!README.md"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          ubuntu-24.04, ubuntu-22.04,
+          ubuntu-24.04-arm, ubuntu-22.04-arm,
+          windows-latest,
+          macos-26, macos-15, macos-14
+        ]
+    name: Build and test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - run: cargo install cargo-tarpaulin
+
+      - run: make ci
