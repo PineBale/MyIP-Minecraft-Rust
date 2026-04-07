@@ -2,18 +2,12 @@ FROM ghcr.io/rust-lang/rust:1-alpine3.22 AS builder
 
 RUN apk add musl-dev
 RUN apk add make
-RUN apk add build-base
-RUN apk add openssl-dev
-RUN apk add perl
-RUN rustup component add rustfmt
-RUN rustup component add clippy
-RUN cargo install cargo-tarpaulin --features vendored-openssl
 
 WORKDIR /usr/src/app
 
 COPY . .
 
-RUN make all
+RUN make build
 
 
 FROM alpine:3.22

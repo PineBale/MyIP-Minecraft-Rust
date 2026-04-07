@@ -22,7 +22,7 @@ defaults:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 6
     env:
       MCSRVMYIP_TEST_DOCKER_IMAGE_TAG: mcmyip:test
       MCSRVMYIP_TEST_DOCKER_CONTAINER_NAME: mcmyiptest
