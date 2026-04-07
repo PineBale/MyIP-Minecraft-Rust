@@ -1,7 +1,6 @@
-FROM ghcr.io/rust-lang/rust:1-alpine3.22 AS builder
+FROM ghcr.io/rust-lang/rust:1-alpine3.23 AS builder
 
-RUN apk add musl-dev
-RUN apk add make
+RUN apk add musl-dev make
 
 WORKDIR /usr/src/app
 
@@ -10,7 +9,7 @@ COPY . .
 RUN make build
 
 
-FROM alpine:3.22
+FROM alpine:3.23
 
 RUN apk add --no-cache tini
 
