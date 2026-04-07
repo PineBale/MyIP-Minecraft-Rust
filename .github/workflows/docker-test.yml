@@ -1,0 +1,68 @@
+name: Test Docker image
+
+on:
+  push:
+    branches:
+      - "master"
+    paths:
+      - "Dockerfile"
+      - "!.dockerignore"
+  pull_request:
+    branches:
+      - "master"
+    paths:
+      - "Dockerfile"
+      - "!.dockerignore"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MCSRVMYIP_TEST_DOCKER_IMAGE_TAG: mcmyip:test
+      MCSRVMYIP_TEST_DOCKER_CONTAINER_NAME: mcmyiptest
+
+    steps:
+      - name: Install
+        run: cargo install --git https://github.com/PineBale/MCPing-Rust.git --tag 0.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - uses: docker/build-push-action@v7
+        with:
+          push: false
+          tags: ${{ env.MCSRVMYIP_TEST_DOCKER_IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test
+        run: |
+          docker run -d --name ${{ env.MCSRVMYIP_TEST_DOCKER_CONTAINER_NAME }} -p 25566:25565 ${{ env.MCSRVMYIP_TEST_DOCKER_IMAGE_TAG }}
+          
+          for i in {1..3}; do
+            echo "Attempt $i/3 ..."
+          
+            if mcping 127.0.0.1:25566; then
+              exit 0
+            else
+              echo "Attempt $i failed"
+              if [ $i -lt 3 ]; then
+                sleep 5
+              fi
+            fi
+          done
+          
+          exit 1
+
+      - name: Clean
+        if: ${{ always() }}
+        run: |
+          set -x
+          docker container rm -f ${{ env.MCSRVMYIP_TEST_DOCKER_CONTAINER_NAME }} || true
+          docker image rm -f ${{ env.MCSRVMYIP_TEST_DOCKER_IMAGE_TAG }} || true

@@ -1,0 +1,10 @@
+.github/
+.idea/
+/target
+*.iml
+lcov.info
+tarpaulin-report.*
+cobertura.xml
+rust-clippy-results.sarif
+.dockerignore
+.gitignore
